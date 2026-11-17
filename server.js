@@ -105,6 +105,11 @@ app.post("/api/chat", async (req, res) => {
     }
     console.error("chat error:", err.message);
     if (res.headersSent) return res.end(); // too late for a JSON error
+    // Node's fetch (undici) gives up if no response headers arrive within 5 min.
+    // With stream:false Ollama only answers once the whole generation is done.
+    if (err.cause?.code === "UND_ERR_HEADERS_TIMEOUT") {
+      return res.status(504).json({ error: "Ollama took more than 5 minutes to answer. Use streaming or a shorter question." });
+    }
     res.status(502).json({ error: `Cannot reach Ollama at ${OLLAMA_URL}` });
   }
 });
