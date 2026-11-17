@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ollama Chat</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="/vendor/marked/marked.umd.js"></script>
+  <script src="/vendor/dompurify/purify.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Ollama Chat</h1>
+    <div class="controls">
+      <label>Model <select id="model"></select></label>
+      <label id="think-wrap" hidden><input type="checkbox" id="think" /> Reasoning</label>
+      <button id="new-chat" type="button">New chat</button>
+      <button id="settings-toggle" type="button" aria-expanded="false">Settings</button>
+    </div>
+  </header>
+
+  <section id="settings" hidden>
+    <label>System prompt
+      <textarea id="system" rows="2" placeholder="e.g. You are a concise assistant."></textarea>
+    </label>
+    <label>Temperature <output id="temp-value">0.7</output>
+      <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" />
+    </label>
+    <label><input type="checkbox" id="markdown" checked /> Render Markdown (sanitized with DOMPurify)</label>
+    <label id="token-wrap" hidden>API token <input type="password" id="token" autocomplete="off" /></label>
+  </section>
+
+  <main id="messages" aria-live="polite"></main>
+
+  <p id="error" role="alert" hidden></p>
+
+  <form id="composer">
+    <textarea id="input" rows="2" placeholder="Type a message… (Enter to send, Shift+Enter for a new line)" required></textarea>
+    <button id="send" type="submit">Send</button>
+    <button id="stop" type="button" hidden>Stop</button>
+  </form>
+
+  <script src="script.js"></script>
+</body>
+</html>

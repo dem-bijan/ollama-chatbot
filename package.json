@@ -1,0 +1,19 @@
+{
+  "name": "ollama-chat-lab",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "dompurify": "^3.4.18",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4",
+    "marked": "^18.2.1"
+  }
+}
