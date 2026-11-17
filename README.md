@@ -27,7 +27,3 @@ node server.js        # optional env: OLLAMA_MODEL, OLLAMA_URL, API_TOKEN, PORT
 ```
 
 Open http://localhost:3000.
-
-## Report
-
-The lab report is in [`report/report.pdf`](report/report.pdf). Its LaTeX source is `report/report.tex`.
