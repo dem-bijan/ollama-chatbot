@@ -1,5 +1,4 @@
-// script.js - chat GUI. Ollama is stateless: we keep the whole conversation here
-// and send all of it with every request.
+// Chat page logic: conversation, streaming display and controls.
 
 const $ = (id) => document.getElementById(id);
 const els = {
@@ -11,11 +10,12 @@ const els = {
   send: $("send"), stop: $("stop"),
 };
 
-let history = [];          // [{ role, content }]
-let models = [];           // [{ name, capabilities }]
-let controller = null;     // AbortController of the running request
+// State
+let history = [];
+let models = [];
+let controller = null;
 
-// ---------- helpers --------------------------------------------------------
+// Helpers
 
 function authHeaders() {
   const t = els.token.value.trim();
@@ -40,8 +40,7 @@ function scrollToBottom() {
   els.messages.scrollTop = els.messages.scrollHeight;
 }
 
-// Model output is untrusted: either plain textContent, or Markdown passed
-// through DOMPurify before innerHTML (otherwise <img onerror=...> = XSS).
+// Rendering
 function renderContent(el, text) {
   if (els.markdown.checked) {
     el.classList.remove("plain");
@@ -84,9 +83,7 @@ function addAssistantBubble() {
   return { div, thinking, thinkingText, content, stats };
 }
 
-// ---------- NDJSON reader --------------------------------------------------
-// A network chunk is NOT a JSON line: it may hold several lines or half a line.
-// Keep a buffer, cut at "\n", keep the incomplete tail for the next read.
+// NDJSON stream reader
 async function* readNDJSON(response) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -102,11 +99,11 @@ async function* readNDJSON(response) {
       if (line) yield JSON.parse(line);
     }
   }
-  buffer += decoder.decode(); // flush
+  buffer += decoder.decode();
   if (buffer.trim()) yield JSON.parse(buffer);
 }
 
-// ---------- models ---------------------------------------------------------
+// Models
 
 function currentModel() {
   return models.find((m) => m.name === els.model.value);
@@ -136,7 +133,7 @@ async function loadModels() {
   }
 }
 
-// ---------- sending --------------------------------------------------------
+// Sending messages
 
 async function send(text) {
   showError("");
@@ -175,7 +172,7 @@ async function send(text) {
     }
 
     for await (const chunk of readNDJSON(response)) {
-      if (chunk.error) throw new Error(chunk.error); // error in the middle of a stream
+      if (chunk.error) throw new Error(chunk.error);
       if (chunk.message?.thinking) {
         thinking += chunk.message.thinking;
         ui.thinking.hidden = false;
@@ -194,16 +191,14 @@ async function send(text) {
     history.push({ role: "assistant", content: answer });
   } catch (err) {
     if (err.name === "AbortError") {
-      // Stop button: not a failure. Keep the partial answer in the history.
       history.push({ role: "assistant", content: answer });
       ui.stats.textContent = "Stopped.";
     } else {
-      // Real error: remove the unanswered user message (history + UI).
       history.splice(history.indexOf(userMsg));
       userBubble.remove();
       ui.div.remove();
       showError(err.message);
-      els.input.value = text; // give the text back so the user can retry
+      els.input.value = text;
     }
   } finally {
     controller = null;
@@ -212,7 +207,7 @@ async function send(text) {
   }
 }
 
-// ---------- events ---------------------------------------------------------
+// Events
 
 els.form.addEventListener("submit", (e) => {
   e.preventDefault();
